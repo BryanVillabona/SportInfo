@@ -1,0 +1,38 @@
+.overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: brightness(50%);
+}
+
+#fondo {
+    background-image: url('../img/futbol.jpg');
+}
+
+nav img {
+    width: 150px;
+    height: auto;
+}
+
+/* Oculta scroll horizontal solo visualmente */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#fondo-azul {
+    background-color: #080c22;
+}
+
+.ver-mas-liga {
+    transition: transform 0.2s;
+}
+
+.ver-mas-liga:hover {
+    transform: scale(1.05);
+}
+
+#columna1 {
+    border: 5px solid black
+}

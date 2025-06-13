@@ -199,3 +199,221 @@ class UIManager {
         elements.modal.classList.remove("hidden");
     }
 }
+
+class LeagueController {
+    static async loadLeagues() {
+        try {
+            const data = await ApiService.fetchData(API_CONFIG.ENDPOINTS.ALL_LEAGUES);
+            const soccerLeagues = data.leagues.filter(league => league.strSport === "Soccer");
+            
+            UIManager.clearCarousel();
+            
+            soccerLeagues.forEach(league => {
+                const card = UIManager.createCard(league, 'league');
+                this.attachLeagueEvents(card, league);
+                elements.carousel.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Error al cargar ligas:", error);
+            UIManager.showError("Error al cargar las ligas.");
+        }
+    }
+
+    static attachLeagueEvents(card, league) {
+        const button = card.querySelector(".ver-mas-liga");
+        button.addEventListener("click", () => this.showLeagueDetails(league));
+    }
+
+    static async showLeagueDetails(league) {
+        try {
+            const data = await ApiService.fetchData(API_CONFIG.ENDPOINTS.LOOKUP_LEAGUE, { id: league.idLeague });
+            const info = data.leagues?.[0];
+            
+            if (info) {
+                UIManager.showModal(info, 'league');
+            } else {
+                FavoritesManager.showMessage("No se encontró información de la liga.");
+            }
+        } catch (error) {
+            console.error("Error al obtener detalles de la liga:", error);
+        }
+    }
+}
+
+class TeamController {
+    static async searchTeams(searchTerm) {
+        if (!searchTerm.trim()) {
+            await LeagueController.loadLeagues();
+            return;
+        }
+
+        try {
+            const data = await ApiService.fetchData(API_CONFIG.ENDPOINTS.SEARCH_TEAMS, { t: searchTerm });
+            const teams = data.teams;
+            
+            UIManager.clearCarousel();
+            
+            if (!teams) {
+                UIManager.showError("Equipo no encontrado.");
+                return;
+            }
+
+            teams.forEach(team => {
+                const card = UIManager.createCard(team, 'team');
+                this.attachTeamEvents(card, team);
+                elements.carousel.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Error al buscar equipos:", error);
+            UIManager.showError("Error al buscar equipo.");
+        }
+    }
+
+    static async loadTeamsByLeague(leagueName) {
+        if (!leagueName) {
+            await LeagueController.loadLeagues();
+            return;
+        }
+
+        try {
+            const data = await ApiService.fetchData(API_CONFIG.ENDPOINTS.TEAMS_BY_LEAGUE, { l: leagueName });
+            const teams = data.teams;
+            
+            UIManager.clearCarousel();
+            
+            if (!teams) {
+                UIManager.showError("No se encontraron equipos.");
+                return;
+            }
+
+            teams.forEach(team => {
+                const card = UIManager.createCard(team, 'team');
+                this.attachTeamEvents(card, team);
+                elements.carousel.appendChild(card);
+            });
+        } catch (error) {
+            console.error("Error al filtrar equipos:", error);
+            UIManager.showError("Error al cargar equipos.");
+        }
+    }
+
+    static attachTeamEvents(card, team) {
+        const detailsBtn = card.querySelector(".ver-mas");
+        const favoriteBtn = card.querySelector(".btn-favorito");
+        
+        detailsBtn.addEventListener("click", () => this.showTeamDetails(team));
+        favoriteBtn.addEventListener("click", () => this.handleFavoriteToggle(team));
+    }
+
+    static async showTeamDetails(team) {
+        try {
+            const data = await ApiService.fetchData(API_CONFIG.ENDPOINTS.SEARCH_TEAMS_DETAILED, { t: team.strTeam });
+            const details = data.teams?.[0];
+            
+            if (details) {
+                UIManager.showModal(details, 'team');
+            } else {
+                FavoritesManager.showMessage("No se encontró información del equipo.");
+            }
+        } catch (error) {
+            console.error("Error al obtener detalles del equipo:", error);
+        }
+    }
+
+    static handleFavoriteToggle(team) {
+        FavoritesManager.toggleFavorite(team);
+    }
+}
+
+class FavoritesController {
+    static showFavorites() {
+        const favorites = FavoritesManager.getFavorites();
+        UIManager.clearCarousel();
+
+        if (favorites.length === 0) {
+            UIManager.showError("No tienes equipos favoritos.");
+            return;
+        }
+
+        favorites.forEach(team => {
+            const card = UIManager.createCard(team, 'team');
+            card.innerHTML = UIManager.createTeamCardHTML(team, true);
+            this.attachFavoriteEvents(card, team);
+            elements.carousel.appendChild(card);
+        });
+    }
+
+    static attachFavoriteEvents(card, team) {
+        const detailsBtn = card.querySelector(".ver-mas");
+        const removeBtn = card.querySelector(".btn-favorito");
+        
+        detailsBtn.addEventListener("click", () => TeamController.showTeamDetails(team));
+        removeBtn.addEventListener("click", () => {
+            FavoritesManager.toggleFavorite(team);
+            this.showFavorites(); 
+        });
+    }
+}
+
+class CarouselController {
+    static init() {
+        this.setupScrollButtons();
+        this.setupAutoScroll();
+    }
+
+    static setupScrollButtons() {
+        elements.btnLeft.addEventListener('click', () => {
+            elements.carousel.scrollBy({ left: -DEFAULTS.SCROLL_AMOUNT, behavior: 'smooth' });
+        });
+
+        elements.btnRight.addEventListener('click', () => {
+            elements.carousel.scrollBy({ left: DEFAULTS.SCROLL_AMOUNT, behavior: 'smooth' });
+        });
+    }
+
+    static setupAutoScroll() {
+        setInterval(() => {
+            elements.carousel.scrollBy({ left: DEFAULTS.SCROLL_AMOUNT, behavior: 'smooth' });
+        }, DEFAULTS.AUTO_SCROLL_INTERVAL);
+    }
+}
+
+class App {
+    static init() {
+        this.setupEventListeners();
+        this.setupInitialLoad();
+        CarouselController.init();
+    }
+
+    static setupEventListeners() {
+        elements.btnSearch.addEventListener("click", () => {
+            TeamController.searchTeams(elements.searchInput.value);
+        });
+
+        elements.searchInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                TeamController.searchTeams(elements.searchInput.value);
+            }
+        });
+
+        elements.filterSport.addEventListener("change", (e) => {
+            TeamController.loadTeamsByLeague(e.target.value);
+        });
+
+        elements.btnFavorites.addEventListener("click", () => {
+            FavoritesController.showFavorites();
+        });
+
+        elements.modalClose.addEventListener("click", () => {
+            elements.modal.classList.add("hidden");
+        });
+    }
+
+    static setupInitialLoad() {
+        LeagueController.loadLeagues();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+});

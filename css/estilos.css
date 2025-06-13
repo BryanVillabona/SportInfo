@@ -12,7 +12,6 @@ nav img {
     height: auto;
 }
 
-/* Oculta scroll horizontal solo visualmente */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }

@@ -10,7 +10,7 @@ Una aplicación web moderna para explorar equipos y ligas de fútbol de todo el 
 - **Sistema de Favoritos**: Guarda hasta 6 equipos favoritos
 - **Información Detallada**: Consulta información completa de equipos y ligas
 - **Diseño Responsive**: Optimizado para dispositivos móviles y desktop
-- **Interfaz Moderna**: Diseño tipo Netflix con carrusel interactivo
+- **Interfaz Moderna**: Diseño flexible con carrusel interactivo
 
 ## Tecnologías Utilizadas
 
@@ -115,7 +115,7 @@ Este proyecto utiliza la [TheSportsDB API](https://www.thesportsdb.com/documenta
 
 ## Configuración
 
-### Variables Principales (main2.js)
+### Variables Principales (main.js)
 ```javascript
 const API_CONFIG = {
     BASE_URL: "https://www.thesportsdb.com/api/v1/json",
@@ -176,6 +176,5 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE.md](LICENSE.m
 
 - [TheSportsDB](https://www.thesportsdb.com/) por proporcionar la API gratuita
 - [Tailwind CSS](https://tailwindcss.com/) por el framework de estilos
-- Comunidad de desarrolladores por inspiración y recursos
 
 ---

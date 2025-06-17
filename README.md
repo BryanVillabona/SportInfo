@@ -2,6 +2,8 @@
 
 Una aplicación web moderna para explorar equipos y ligas de fútbol de todo el mundo, con una interfaz intuitiva estilo Netflix que permite buscar, filtrar y gestionar equipos favoritos.
 
+Para visualizar el aplicativo web da click [aquí](https://bryanvillabona.github.io/SportInfo/)
+
 ## Características
 
 - **Exploración de Ligas**: Visualiza las principales ligas de fútbol del mundo
